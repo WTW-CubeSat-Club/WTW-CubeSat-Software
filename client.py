@@ -4,7 +4,7 @@ import asyncio
 import websockets
 
 async def hello():
-    uri = "ws://localhost:8765"
+    uri = "wss://localhost:8765"
     async with websockets.connect(uri) as websocket:
         time = input("Start time, end time: ")
         await websocket.send(time)
