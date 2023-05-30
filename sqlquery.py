@@ -68,11 +68,11 @@ class sql:
             print("Invalid data type")
         """
         conn.commit()
+"""
+console = sql()
+console.get(1685335865, 1685335870, "temp")
+console.append("temp", 96.42)
+c.execute("SELECT * FROM temp")
+print(c.fetchall())
 
-#console = sql()
-#console.get(1685335865, 1685335870, "temp")
-#console.append("temp", 96.42)
-#c.execute("SELECT * FROM temp")
-#print(c.fetchall())
-
-#conn.close()
+#conn.close()"""

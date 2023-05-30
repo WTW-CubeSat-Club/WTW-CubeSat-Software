@@ -1,8 +1,9 @@
 import asyncio
 import sqlite3
 import sqlquery
-import time
 import websockets 
+import pathlib
+import ssl
 
 conn = sqlite3.connect("data.db")
 c = conn.cursor()
@@ -29,9 +30,12 @@ async def handler(websocket, path):
         await websocket.send(console.get(start_time, end_time, data_type))
 
  
+#security
+localhost_pem = pathlib.Path(__file__).with_name("private.pem")
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain(localhost_pem)
  
-start_server = websockets.serve(handler, "localhost", 8000)
- 
+start_server = websockets.serve(handler, "localhost", 8000, ssl=ssl_context)
  
  
 asyncio.get_event_loop().run_until_complete(start_server)

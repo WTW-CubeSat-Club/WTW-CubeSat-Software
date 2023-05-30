@@ -1,8 +1,14 @@
 import asyncio
 import websockets
+import pathlib
+import ssl
  
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+localhost_pem = pathlib.Path(__file__).with_name("test.pem")
+ssl_context.load_verify_locations(localhost_pem)
+
 async def test():
-    async with websockets.connect('ws://localhost:8000') as websocket:
+    async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
         while True:    
             command = input("Command: ")
             await websocket.send(command)
@@ -18,6 +24,5 @@ async def test():
             print("done")
             quit()
         
-asyncio.get_event_loop().run_until_complete(test())
 
-asyncio.get_event_loop().run_forever()
+asyncio.get_event_loop().run_until_complete(test())
