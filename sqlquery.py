@@ -23,38 +23,51 @@ c = conn.cursor()
 #close
 #conn.close()
 
+def parse(data):
+        unparsed_data = str(data)
+        final_data = 0
+        
+        step1 = unparsed_data.replace("[", "")
+        step2 = step1.replace("(", "")
+        step3 = step2.replace(")", "")
+        final_data = step3.replace("]", "")
+        if final_data == "":
+            final_data = "0,"
+        return final_data
+
 class sql:
+
 
     table = ""
     #no init method needed
     def get(self, start_time, end_time, data_type):
-        data_list =  ""
+        y_list =  ""
+        x_list = ""
         #find data_type and set which table we are querying, using single quotes so sqlite doesn't get confused
         if data_type == "temp":
             while start_time <= end_time:
                 #convert into str because sqlite is picky like that
                 str_time = "%s" % start_time
-                print(str_time)
-                c.execute("""SELECT unix_time, data FROM temp WHERE unix_time = ?""", [str_time])
+                c.execute("""SELECT data FROM temp WHERE unix_time = ?""", [str_time])
                 data = c.fetchall()
-                datastr = f"{str_time}\n{str(data)}\n"
+                y_list += str(parse(data))
+                print(y_list)
                 start_time+=1
-                print(datastr)
-                data_list+=datastr
+                
 
         if data_type == "altitude":
             while start_time <= end_time:
                 #convert into str because sqlite is picky like that
                 str_time = "%s" % start_time
-                c.execute("""SELECT * FROM altitude WHERE unix_time = ?""", [str_time])
+                c.execute("""SELECT data FROM altitude WHERE unix_time = ?""", [str_time])
                 data = c.fetchall()
-                datastr = f"{str_time}\n{str(data)}\n"
-                print(datastr)
+                y_list += str(parse(data))
+                print(y_list)
                 start_time+=1
-                print(data)
-                data_list+=datastr
 
-        return data_list        
+        #remove extra comma
+        y_list = y_list[:-1]
+        return y_list      
 
     def append(self, data_type, data):
         #using if statements so I don't have to interpolate the data_type
@@ -68,11 +81,11 @@ class sql:
             print("Invalid data type")
         """
         conn.commit()
-"""
+
 console = sql()
 console.get(1685335865, 1685335870, "temp")
-console.append("temp", 96.42)
-c.execute("SELECT * FROM temp")
-print(c.fetchall())
+#console.append("temp", 96.42)
+#c.execute("SELECT * FROM temp")
+#print(c.fetchall())
 
-#conn.close()"""
+#conn.close()

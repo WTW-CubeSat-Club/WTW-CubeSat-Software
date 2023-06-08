@@ -5,8 +5,6 @@ import websockets
 import pathlib
 import ssl
 
-conn = sqlite3.connect("data.db")
-c = conn.cursor()
 console = sqlquery.sql()
 #console.get(1685335865, 1685335870, "temp")
 
@@ -17,7 +15,7 @@ async def handler(websocket, path):
     while True:
         command = await websocket.recv()
         print(command)
-        #data pipe and satellite communication protocol is still not known
+        #atellite communication protocol is still not known
         start_time_str = await websocket.recv()
         start_time=int(start_time_str)
         print(start_time)
@@ -26,12 +24,13 @@ async def handler(websocket, path):
         print(end_time)
         data_type = await websocket.recv()
         print(data_type)
-        #await websocket.send("done")
-        await websocket.send(console.get(start_time, end_time, data_type))
+        data = console.get(start_time, end_time, data_type)
+        print(data)
+        await websocket.send(data)
 
  
 #security
-localhost_pem = pathlib.Path(__file__).with_name("private.pem")
+localhost_pem = pathlib.Path(__file__).with_name("localhost.pem")
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(localhost_pem)
  
