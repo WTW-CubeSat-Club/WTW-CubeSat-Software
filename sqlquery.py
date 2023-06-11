@@ -42,7 +42,6 @@ class sql:
     #no init method needed
     def get(self, start_time, end_time, data_type):
         y_list =  ""
-        x_list = ""
         #find data_type and set which table we are querying, using single quotes so sqlite doesn't get confused
         if data_type == "temp":
             while start_time <= end_time:
@@ -82,10 +81,17 @@ class sql:
         """
         conn.commit()
 
-console = sql()
-console.get(1685335865, 1685335870, "temp")
+
+c.execute("""CREATE TABLE images (
+    unix_time integer,
+    data blob
+)""")
+
+#console = sql()
+#console.get(1685335865, 1685335870, "temp")
 #console.append("temp", 96.42)
 #c.execute("SELECT * FROM temp")
 #print(c.fetchall())
 
-#conn.close()
+conn.commit()
+conn.close()
