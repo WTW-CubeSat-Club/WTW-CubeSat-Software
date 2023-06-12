@@ -17,3 +17,8 @@ c.execute("""CREATE TABLE altitude (
     unix_time integer,
     data real
 )""")
+
+c.execute("""CREATE TABLE images (
+    unix_time integer,
+    data blob
+)""")

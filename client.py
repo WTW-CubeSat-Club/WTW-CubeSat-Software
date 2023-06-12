@@ -6,13 +6,14 @@ import subprocess
 import os
 import matplotlib.pyplot as plt
 import csv
-from _thread import start_new_thread as thread
+import time
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 localhost_pem = pathlib.Path(__file__).with_name("test.pem")
 ssl_context.load_verify_locations(localhost_pem)
 
 async def socket():
+    
     async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
         while True:    
             command = input("Command: ")
@@ -24,11 +25,8 @@ async def socket():
             await websocket.send(end_time)
             data_type = input("Data type: ")
             await websocket.send(data_type)
-            print("\n")
             global unparsed
             unparsed = await websocket.recv()
-            print("\n")
-            print("[OK]\n")
             break
         
 def parse(list):
@@ -39,8 +37,13 @@ def parse(list):
     y_len = len(y_list)
 
 def graph(x_list, y_list):
-    plt.plot(x_list, y_list, 'o')
-    plt.show()
+    ask = input("\nGraph data? [y/n]: ")
+    if ask.lower() == "y":
+        clear()
+        print("\n[Close window to continue]")
+        plt.plot(x_list, y_list, 'o')
+        plt.show()
+    
 
 def makeXList(start_time):
     x_list = []
@@ -57,28 +60,37 @@ def clear():
         subprocess.run("clear")
 
 def saveData(x_list, y_list):
-    ask = input("Save data? [y/n]: ")
+    ask = input("\nSave data? [y/n]: ")
     if ask.lower() == 'y':
         filename = input("Enter the filename: ")
+        #make sure it's saved as csv
+        filename = filename+".csv"
         with open(filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(x_list)
             writer.writerow(y_list)
-        print("Data saved successfully!")
+            clear()
+            print("\n[OK]")
+            time.sleep(1)
     else:
         print("Data not saved.")
 
 def main():
     subprocess.run("clear")
     while True:
-        start = input("[Press a key to connect]")
+        start = input("\n[Press a key to connect]")
         clear()
         print("\n")
         asyncio.get_event_loop().run_until_complete(socket())
+        clear()
+        print("\n[OK]")
+        time.sleep(1)
+        clear()
         parse(unparsed)
         x_list = makeXList(start_time)
-        print("[Close window to send another command]")
         graph(x_list, y_list)
+        clear()
+        clear()
         saveData(x_list, y_list)
         clear()
 

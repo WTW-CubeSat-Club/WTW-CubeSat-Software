@@ -82,16 +82,9 @@ class sql:
         conn.commit()
 
 
-c.execute("""CREATE TABLE images (
-    unix_time integer,
-    data blob
-)""")
 
 #console = sql()
 #console.get(1685335865, 1685335870, "temp")
 #console.append("temp", 96.42)
 #c.execute("SELECT * FROM temp")
 #print(c.fetchall())
-
-conn.commit()
-conn.close()
