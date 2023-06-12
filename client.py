@@ -58,6 +58,15 @@ def clear():
 
 def saveData(x_list, y_list):
     ask = input("Save data? [y/n]: ")
+    if ask.lower() == 'y':
+        filename = input("Enter the filename: ")
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(x_list)
+            writer.writerow(y_list)
+        print("Data saved successfully!")
+    else:
+        print("Data not saved.")
 
 def main():
     subprocess.run("clear")
@@ -70,7 +79,8 @@ def main():
         x_list = makeXList(start_time)
         print("[Close window to send another command]")
         graph(x_list, y_list)
+        saveData(x_list, y_list)
         clear()
 
-if __name__ == main():
+if __name__ == "__main__":
     main()
