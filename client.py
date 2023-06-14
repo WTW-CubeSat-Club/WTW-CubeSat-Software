@@ -37,9 +37,9 @@ async def socket():
                 unparsed = await websocket.recv()
                 error = False
                 break
-    except OSError:
+    except:
         clear()
-        print("\n[Could not connect, try again]")
+        print("\n[Error occured, please try again]")
         time.sleep(1.5)
 
         
