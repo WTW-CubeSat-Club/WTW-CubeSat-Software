@@ -12,22 +12,36 @@ ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 localhost_pem = pathlib.Path(__file__).with_name("test.pem")
 ssl_context.load_verify_locations(localhost_pem)
 
+def clear():
+    if os.name == "nt":
+        subprocess.run("cls")
+    else:
+        subprocess.run("clear")
+
 async def socket():
-    
-    async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
-        while True:    
-            command = input("Command: ")
-            await websocket.send(command)
-            global start_time
-            start_time = input("Start time: ")
-            await websocket.send(start_time)
-            end_time = input("End time: ")
-            await websocket.send(end_time)
-            data_type = input("Data type: ")
-            await websocket.send(data_type)
-            global unparsed
-            unparsed = await websocket.recv()
-            break
+    global error
+    error = True
+    try:
+        async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
+            while True:    
+                command = input("Command: ")
+                await websocket.send(command)
+                global start_time
+                start_time = input("Start time: ")
+                await websocket.send(start_time)
+                end_time = input("End time: ")
+                await websocket.send(end_time)
+                data_type = input("Data type: ")
+                await websocket.send(data_type)
+                global unparsed
+                unparsed = await websocket.recv()
+                error = False
+                break
+    except OSError:
+        clear()
+        print("\n[Could not connect, try again]")
+        time.sleep(1.5)
+
         
 def parse(list):
     reader = csv.reader(list.splitlines(), quoting=csv.QUOTE_NONNUMERIC)
@@ -53,11 +67,7 @@ def makeXList(start_time):
         start_time+=1
     return x_list
 
-def clear():
-    if os.name == "nt":
-        subprocess.run("cls")
-    else:
-        subprocess.run("clear")
+
 
 def saveData(x_list, y_list):
     ask = input("\nSave data? [y/n]: ")
@@ -75,24 +85,36 @@ def saveData(x_list, y_list):
     else:
         print("Data not saved.")
 
+def connect():
+    start = input("\n[Press a key to connect]")
+    clear()
+    print("\n")
+    asyncio.get_event_loop().run_until_complete(socket())
+    clear()
+    
+
 def main():
-    subprocess.run("clear")
-    while True:
-        start = input("\n[Press a key to connect]")
+    clear()
+    try:
+        while True:
+            connect()
+            if error == False:
+                print("\n[OK]")
+                time.sleep(1)
+                clear()
+                parse(unparsed)
+                x_list = makeXList(start_time)
+                graph(x_list, y_list)
+                clear()
+                clear()
+                saveData(x_list, y_list)
+                clear()
+    except KeyboardInterrupt:
         clear()
-        print("\n")
-        asyncio.get_event_loop().run_until_complete(socket())
+        print("\n[Quitting]")
+        time.sleep(0.7)
         clear()
-        print("\n[OK]")
-        time.sleep(1)
-        clear()
-        parse(unparsed)
-        x_list = makeXList(start_time)
-        graph(x_list, y_list)
-        clear()
-        clear()
-        saveData(x_list, y_list)
-        clear()
+        quit
 
 if __name__ == "__main__":
     main()
