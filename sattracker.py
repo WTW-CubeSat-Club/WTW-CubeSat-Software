@@ -4,31 +4,36 @@ import time
 from client import clear
 
 
+#observer latitude (decimal degrees)
+lat = "38.807780"
+#observer longitude (decimal degrees)
+lng = "-77.210430"
+#set observer elevation above sea level (meters)
+elevation = "82"
+#n2yo api key
+api_key = "Enter API key"
+#num of days for pass prediction
+days = "9"
+#minimum number of seconds sat should be visible, set at 3 mins for now
+min_visibility = "180"
+#how often tracker refreshes (secs)
+update = 30
+
 
 #set NORAD ID
 clear()
 #gonna eventually recieve this from client.py
 sat_id = input("\nSatellite ID: ")
 clear()
-#observer latitude (decimal degrees)
-lat = "38.807780"
 
-#observer longitude (decimal degrees)
-lng = "-77.210430"
 
-#set observer elevation above sea level (meters)
-elevation = "82"
 
-api_key = "Enter api"
+
+
+
 
 #num of future positions to return, don't mess with this variable because it doesn't really matter much to the func, but it is still needed
 sec = "1"
-
-#num of days for pass prediction
-days = "9"
-
-#minimum number of seconds sat should be visible, set at 3 mins for now
-min_visibility = "180"
 
 def main():
     try:
@@ -61,19 +66,24 @@ def main():
                 print("[Pass Prediction]\n")
 
                 try:
-                    start_time = datetime.fromtimestamp(pass_data["passes"][0]["startUTC"]).strftime('%Y-%m-%d %H:%M:%S')
+                    timestamp = pass_data["passes"][0]["startUTC"]
+                    start_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
                     duration = pass_data["passes"][0]["duration"]
                     minutes = int(duration) // 60
                     seconds = int(duration) % 60
                     num_passes = pass_data["info"]["passescount"]
                     #show data
+                    if round(time.time()) == timestamp + duration:
+                        print("Currently overhead: yes")
+                    else:
+                        print("Currently overhead: no")
                     print(f"Future passes over the next {days} days: {num_passes}")
                     print(f"Time of next pass: {start_time}")
                     print(f"Duration of next pass: {minutes} mins, {seconds} secs")
 
                 except:
                     print("No available pass data for the next {days} days")
-                time.sleep(30)
+                time.sleep(update)
 
             except:
                 secs = 10
@@ -81,8 +91,8 @@ def main():
                     clear()
                     print(f"\n[Could not connect, retrying in {secs} secs]")
                     secs -= 1
-                    time.sleep(0.94)
-                    
+                    time.sleep(0.95)
+
     except KeyboardInterrupt:
         clear()
         print("\n[Quitting]")
