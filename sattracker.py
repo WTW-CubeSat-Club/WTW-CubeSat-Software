@@ -71,20 +71,18 @@ def main():
                         except:
                             time.sleep(1)
                         retrive = False
+                    
+                    #converts raw data into json
                     current_data = current_data_req.json()
                     pass_data = pass_data_req.json()
                     first = False
                         
-            
-
-                
+                    #parsing
                     satname = current_data["info"]["satname"]
                     satalt = round(int(current_data["positions"][0]["sataltitude"]) * 3280.8)
                     satlat = current_data["positions"][0]["satlatitude"]
                     satlng = current_data["positions"][0]["satlongitude"]
                 
-
-
                     clear()
                     print("\n[Tracker]\n")
                     print(f"Satellite name: {satname}")
