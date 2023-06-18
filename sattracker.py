@@ -2,7 +2,6 @@ import requests
 from datetime import datetime
 import time
 from client import clear
-import requests.exceptions
 from client import sat_id
 
 

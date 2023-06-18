@@ -29,14 +29,24 @@ async def socket():
             while True:
                 clear()
                 print("\n[Ground station client]")
-                command = input("\nCommand: ")
+                #lowercase and get rid of spaces
+                global command
+                command = input("\nCommand: ").lower()
+                command = command.replace(" ", "")
                 await websocket.send(command)
                 global start_time
                 start_time = input("Start time: ")
+                #get rid of spaces
+                start_time = start_time.replace(" ", "")
                 await websocket.send(start_time)
                 end_time = input("End time: ")
+                #get rid of spaces
+                end_time = end_time.replace(" ", "")
                 await websocket.send(end_time)
-                data_type = input("Data type: ")
+                #lower and get rid of spaces
+                global data_type
+                data_type = input("Data type: ").lower()
+                data_type = data_type.replace(" ", "")
                 await websocket.send(data_type)
                 global unparsed
                 unparsed = await websocket.recv()
@@ -52,7 +62,7 @@ async def socket():
     #display error for invalid params
     except websockets.exceptions.ConnectionClosedError:
         clear()
-        print("\n[Parameters are invalid, try again]")
+        print("\n[Parameters are invalid]")
         time.sleep(1.5)
         
 #parse y list given as a string
@@ -113,41 +123,54 @@ def connect():
     asyncio.get_event_loop().run_until_complete(socket())
     clear()
 
+sat_id = ""
 
-#start client
-clear()
-start = input("\n[Press enter to connect]")
-clear()
-#set norad id for sattracker.py
-sat_id = input("\nSatellite ID: ")
 
 def main():
     clear()
     try:
-        first = True
+        #run client forever
         while True:
-            if first:
-                pass
-            else:
-                start = input("\n[Press a key to connect]")
-            first = False
+            #start client
             clear()
-            command = "conda activate satcom && python /Users/ziad/cubesat/scripts/sattracker.py"
-            tell.app( 'Terminal', 'do script "' + command + '"') 
-            connect()
-
-            if error == False:
-                print("\n[OK]")
-                time.sleep(1)
-                clear()
-                parse(unparsed)
-                x_list = makeXList(start_time)
+            start = input("\n[Press enter to start]")
+            clear()
+            #set norad id for sattracker.py
+            #assign two different variables so it doesn't ask for sat id twice
+            sat_id = input("\nSatellite ID: ")
+            clear()
+            #set command to launch sattracker for now
+            terminalcommand= "conda activate satcom && python /Users/ziad/cubesat/scripts/sattracker.py"
+            tell.app( 'Terminal', 'do script "' + terminalcommand + '"') 
+            #set variable that controls while loop
+            #while loop enables mutiple commands to one db
+            again = "y"
+            while again == "y":
                 
-                graph(x_list, y_list)
+                connect()
+            
+                if error == False:
+                    print("\n[OK]")
+                    time.sleep(1)
+                    clear()
+                    if command == "get":
+                        if data_type != "images" or data_type != "pictures":
+                            parse(unparsed)
+                            x_list = makeXList(start_time)
+                            graph(x_list, y_list)
+                            clear()
+                            clear()
+                            saveData(x_list, y_list)
+                            clear()
+                        else:
+                            #will add stuff to deal with images later
+                            pass
+                    #gonna add more commands to client and sqlquery later
                 clear()
-                clear()
-                saveData(x_list, y_list)
-                clear()
+                another_cmd = input("\nSend another command? [y/n]: ")
+                if another_cmd != "y":
+                    again = another_cmd
+
     except KeyboardInterrupt:
         clear()
         print("\n[Quitting]")
