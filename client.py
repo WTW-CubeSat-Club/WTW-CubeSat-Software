@@ -27,6 +27,7 @@ async def socket():
         async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
             while True:
                 clear()
+                print("\n[Ground station client]")
                 command = input("\nCommand: ")
                 await websocket.send(command)
                 global start_time
@@ -48,7 +49,7 @@ async def socket():
         time.sleep(1.5)
     
     #display error for invalid params
-    except:
+    except websockets.exceptions.ConnectionClosedError:
         clear()
         print("\n[Parameters are invalid, try again]")
         time.sleep(1.5)
@@ -63,9 +64,11 @@ def parse(list):
 
 #graph x and y lists
 def graph(x_list, y_list):
+    print("\n[Ground station client]")
     ask = input("\nGraph data? [y/n]: ")
     if ask.lower() == "y":
         clear()
+
         print("\n[Close window to continue]")
         plt.plot(x_list, y_list, 'o')
         plt.show()
@@ -83,6 +86,7 @@ def makeXList(start_time):
 #save data
 def saveData(x_list, y_list):
     try:
+        print("\n[Ground station client]")
         ask = input("\nSave data? [y/n]: ")
         if ask.lower() == 'y':
             filename = input("Enter the filename: ")
@@ -106,6 +110,7 @@ def saveData(x_list, y_list):
 def connect():
     start = input("\n[Press a key to connect]")
     clear()
+    print("[Ground station client]")
     asyncio.get_event_loop().run_until_complete(socket())
     clear()
 
@@ -122,6 +127,7 @@ def main():
                 clear()
                 parse(unparsed)
                 x_list = makeXList(start_time)
+                
                 graph(x_list, y_list)
                 clear()
                 clear()
