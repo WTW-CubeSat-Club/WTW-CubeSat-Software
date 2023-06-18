@@ -2,9 +2,15 @@ import requests
 from datetime import datetime
 import time
 from client import clear
-from client import sat_id
+#from client import sat_id
 
+sat_id ="25544"
 
+""" 
+note:
+    there is a request limit set per hour, and if you go over it
+    the website will deny requests and you will get an error
+ """
 
 
 #observer latitude (decimal degrees)
@@ -37,6 +43,7 @@ def main():
     try:
         #need to copy code here so we can let the user know its initializing and not clear the whole screen later on
         #that way ui can update fast and without the user noticing
+        clear()
         print("[Initializing]")
         current_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
@@ -46,7 +53,6 @@ def main():
         first = True
         clear()
         while True:
-
             #nested try statement because connection error might occur multiple times
             try:
                 try:
@@ -108,7 +114,7 @@ def main():
                     except:
                         print(f"No available pass data for the next {days} days")
 
-                except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
+                except TypeError:#(requests.exceptions.JSONDecodeError, KeyError, IndexError):
                     #clear()
                     print("\n[Error occurred while parsing data]")
                     time.sleep(3)
