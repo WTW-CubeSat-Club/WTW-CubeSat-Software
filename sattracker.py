@@ -27,7 +27,7 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = "Enter N2YO API key"
+api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
 update = 1
@@ -137,4 +137,5 @@ def main():
         clear()
 
 
-main()
+if __name__ == "__main__":
+    main()
