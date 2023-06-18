@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import time
 from client import clear
+import requests.exceptions
 
 
 # set NORAD ID
@@ -35,38 +36,46 @@ def main():
         while True:
             clear()
             print("\n[Retrieving data]")
-            
+
             # get current position data
             try:
                 current_data_req = requests.get(
                     url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
                 current_data = current_data_req.json()
-                satname = current_data["info"]["satname"]
-                satalt = round(int(current_data["positions"][0]["sataltitude"]) * 3280.8)
-                satlat = current_data["positions"][0]["satlatitude"]
-                satlng = current_data["positions"][0]["satlongitude"]
             except requests.exceptions.RequestException:
                 print("\n[Connection error occurred while retrieving current position data]")
                 time.sleep(5)
                 continue
-            except (KeyError, IndexError):
+
+            try:
+                satname = current_data["info"]["satname"]
+                satalt = round(int(current_data["positions"][0]["sataltitude"]) * 3280.8)
+                satlat = current_data["positions"][0]["satlatitude"]
+                satlng = current_data["positions"][0]["satlongitude"]
+            except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
                 print("\n[Error occurred while parsing current position data]")
                 time.sleep(5)
                 continue
-            
+
             clear()
             print("\n[Tracker]\n")
             print(f"Satellite name: {satname}")
             print(f"NORAD ID: {sat_id}")
             print(f"Current coordinates: {satlat}, {satlng}")
             print(f"Current altitude: {satalt} ft\n")
-            
+
             print("[Pass Prediction]\n")
             # get passes data
             try:
                 pass_data_req = requests.get(
                     url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
                 pass_data = pass_data_req.json()
+            except requests.exceptions.RequestException:
+                print("\n[Connection error occurred while retrieving pass prediction data]")
+                time.sleep(5)
+                continue
+
+            try:
                 start_time = datetime.fromtimestamp(pass_data["passes"][0]["startUTC"]).strftime('%Y-%m-%d %H:%M:%S')
                 duration = pass_data["passes"][0]["duration"]
                 minutes = int(duration) // 60
@@ -75,15 +84,11 @@ def main():
                 print(f"Future passes over the next {days} days: {num_passes}")
                 print(f"Time of next pass: {start_time}")
                 print(f"Duration of next pass: {minutes} mins, {seconds} secs")
-            except requests.exceptions.RequestException:
-                print("\n[Connection error occurred while retrieving pass prediction data]")
-                time.sleep(5)
-                continue
-            except (KeyError, IndexError):
+            except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
                 print("\n[Error occurred while parsing pass prediction data]")
                 time.sleep(5)
                 continue
-            
+
             time.sleep(30)
 
     except KeyboardInterrupt:
