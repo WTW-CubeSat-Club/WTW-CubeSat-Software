@@ -6,11 +6,7 @@ import requests.exceptions
 
 
 
-#set NORAD ID
-clear()
-# gonna eventually receive this from client.py
-sat_id = input("\nSatellite ID: ")
-clear()
+
 #observer latitude (decimal degrees)
 lat = "38.807780"
 
@@ -34,18 +30,25 @@ min_visibility = "180"
 api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
-update = 20
+update = 1
+
+
+#set NORAD ID
+clear()
+# gonna eventually receive this from client.py
+sat_id = input("\nSatellite ID: ")
+clear()
 
 def main():
     try:
+        #need to copy code here so we can let the user know its initializing and not clear the whole screen later on
+        #that way ui can update fast and without the user noticing
         print("[Initializing]")
-        global current_data_req
         current_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
-        global pass_data_req
+        #global pass_data_req
         pass_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
-        global first
         first = True
         clear()
         while True:
@@ -54,6 +57,7 @@ def main():
             try:
                 try:
                     retrive = True
+                    #checks to see if it needs to retrive and skips block if its run for the first time
                     while retrive == True and first == False:
                         start_time=time.time()
                         current_data_req = requests.get(
@@ -61,7 +65,11 @@ def main():
                         pass_data_req = requests.get(
                             url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
                         end_time=time.time()-start_time
-                        time.sleep(update - end_time)
+                        #takes care of error for when update is at or below 1
+                        try:
+                            time.sleep(update - end_time)
+                        except:
+                            time.sleep(1)
                         retrive = False
                     current_data = current_data_req.json()
                     pass_data = pass_data_req.json()
