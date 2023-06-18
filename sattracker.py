@@ -31,26 +31,40 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = "enter api key"
+api_key = ""
 
 #update in secs
-update = 5
+update = 20
 
 def main():
     try:
+        global current_data_req
+        current_data_req = requests.get(
+            url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
+        global pass_data_req
+        pass_data_req = requests.get(
+            url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
+        global first
+        first = True
         while True:
-            clear()
-            print("\n[Retrieving data]")
 
             #nested try statement because connection error might occur multiple times
             try:
                 try:
-                    current_data_req = requests.get(
-                        url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
-                    pass_data_req = requests.get(
-                        url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
-                    pass_data = pass_data_req.json()
+                    retrive = True
+                    while retrive == True and first == False:
+                        start_time=time.time()
+                        current_data_req = requests.get(
+                            url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
+                        pass_data_req = requests.get(
+                            url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
+                        end_time=time.time()-start_time
+                        time.sleep(update - end_time)
+                        retrive = False
                     current_data = current_data_req.json()
+                    pass_data = pass_data_req.json()
+                    first = False
+                        
             
 
                 
@@ -69,8 +83,7 @@ def main():
                     print(f"Current altitude: {satalt} ft\n")
                     print("[Pass Prediction]\n")
                     # get passes data
-           
-
+        
                     try:
                         start_time = datetime.fromtimestamp(pass_data["passes"][0]["startUTC"]).strftime('%Y-%m-%d %H:%M:%S')
                         duration = pass_data["passes"][0]["duration"]
@@ -84,11 +97,11 @@ def main():
 
                     except:
                         print("No available pass data for the next {days} days")
-                    time.sleep(update)
 
-                except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
+                except TypeError:#(requests.exceptions.JSONDecodeError, KeyError, IndexError):
                     print("\n[Error occurred while parsing data]")
-                    time.sleep(5)
+                    time.sleep(3)
+                    clear()
 
             except requests.exceptions.RequestException:
                 secs = 10
