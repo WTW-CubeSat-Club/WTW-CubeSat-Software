@@ -31,13 +31,14 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = ""
+api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
 update = 20
 
 def main():
     try:
+        print("[Initializing]")
         global current_data_req
         current_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
@@ -46,6 +47,7 @@ def main():
             url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
         global first
         first = True
+        clear()
         while True:
 
             #nested try statement because connection error might occur multiple times
