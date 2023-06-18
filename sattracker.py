@@ -69,7 +69,7 @@ def main():
                         try:
                             time.sleep(update - end_time)
                         except:
-                            time.sleep(1)
+                            time.sleep(0.3)
                         retrive = False
                     
                     #converts raw data into json
@@ -93,20 +93,29 @@ def main():
                     # get passes data
         
                     try:
-                        start_time = datetime.fromtimestamp(pass_data["passes"][0]["startUTC"]).strftime('%Y-%m-%d %H:%M:%S')
+                        timestamp = pass_data["passes"][0]["startUTC"]
+                        start_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
                         duration = pass_data["passes"][0]["duration"]
                         minutes = int(duration) // 60
                         seconds = int(duration) % 60
                         num_passes = pass_data["info"]["passescount"]
+                        end_timestamp = timestamp + duration 
                         #show data
+                        
+                        if timestamp-time.time() <= 0 and  end_timestamp < time.time():
+                            print("Currently overhead: yes")
+                        else:
+                            print("Currently overhead: no")
+                            
                         print(f"Future passes over the next {days} days: {num_passes}")
                         print(f"Time of next pass: {start_time}")
                         print(f"Duration of next pass: {minutes} mins, {seconds} secs")
 
                     except:
-                        print("No available pass data for the next {days} days")
+                        print(f"No available pass data for the next {days} days")
 
-                except TypeError:#(requests.exceptions.JSONDecodeError, KeyError, IndexError):
+                except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
+                    #clear()
                     print("\n[Error occurred while parsing data]")
                     time.sleep(3)
                     clear()
