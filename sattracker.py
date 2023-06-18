@@ -75,7 +75,7 @@ def main():
                     print("No available pass data for the next {days} days")
                 time.sleep(30)
 
-            except:
+            except requests.exceptions.RequestException:
                 secs = 10
                 for i in range(9):
                     clear()
