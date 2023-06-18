@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 from client import clear
 import requests.exceptions
+from client import sat_id
 
 
 
@@ -30,14 +31,8 @@ min_visibility = "180"
 api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
-update = 1
+update = 5
 
-
-#set NORAD ID
-clear()
-# gonna eventually receive this from client.py
-sat_id = input("\nSatellite ID: ")
-clear()
 
 def main():
     try:

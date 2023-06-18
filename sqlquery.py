@@ -89,7 +89,7 @@ class sql:
             c.execute("""INSERT INTO  images VALUES (?, ?)""", (round(time.time()), data))
         #support for one unsupported data type per db in the form of the "other" collom
         if data_type not in supported_names:
-            c.execute("""INSERT INTO other images VALUES (?, ?)""", (round(time.time()), data))
+            c.execute("""INSERT INTO other VALUES (?, ?)""", (round(time.time()), data))
         else:
             print("[Data type not in DB]")
             conn.commit()

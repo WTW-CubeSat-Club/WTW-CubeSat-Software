@@ -7,6 +7,7 @@ import subprocess
 import matplotlib.pyplot as plt
 import csv
 import time
+from applescript import tell
 
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -108,17 +109,31 @@ def saveData(x_list, y_list):
 
 #connect using socket function
 def connect():
-    start = input("\n[Press a key to connect]")
-    clear()
     print("[Ground station client]")
     asyncio.get_event_loop().run_until_complete(socket())
     clear()
 
 
+#start client
+clear()
+start = input("\n[Press enter to connect]")
+clear()
+#set norad id for sattracker.py
+sat_id = input("\nSatellite ID: ")
+
 def main():
     clear()
     try:
+        first = True
         while True:
+            if first:
+                pass
+            else:
+                start = input("\n[Press a key to connect]")
+            first = False
+            clear()
+            command = "conda activate satcom && python /Users/ziad/cubesat/scripts/sattracker.py"
+            tell.app( 'Terminal', 'do script "' + command + '"') 
             connect()
 
             if error == False:
@@ -139,6 +154,8 @@ def main():
         time.sleep(0.6)
         clear()
         quit
+
+
 
 if __name__ == "__main__":
     main()
