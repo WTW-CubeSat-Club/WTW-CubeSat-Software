@@ -27,7 +27,7 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
+api_key = "Enter N2YO API key"
 
 #update in secs
 update = 1
