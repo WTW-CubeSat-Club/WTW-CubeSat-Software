@@ -6,13 +6,21 @@ import sys
 import subprocess
 import matplotlib.pyplot as plt
 import csv
+import os
 import time
-from applescript import tell
+if sys.platform == "darwin":
+    from applescript import tell
 
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 localhost_pem = pathlib.Path(__file__).with_name("test.pem")
 ssl_context.load_verify_locations(localhost_pem)
+
+#find current directory
+pwd = subprocess.check_output("pwd")
+pwd = str(pwd).replace("'", "")
+pwd = pwd[1:]
+pwd = pwd[:len(pwd)-2]
 
 def clear():
     if sys.platform == "win32" or sys.platform == "cygwin" or sys.platform == "msys":
@@ -23,7 +31,8 @@ def clear():
 async def socket():
     global error
     error = True
-    
+    global notconnect
+    notconnect = False
     try:
         async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
             while True:
@@ -52,11 +61,13 @@ async def socket():
                 unparsed = await websocket.recv()
                 error = False
                 break
+
     
     #display error if connect fails
     except OSError:
         clear()
         print("\n[Could  not connect]")
+        notconnect = True
         time.sleep(1.5)
     
     #display error for invalid params
@@ -123,7 +134,6 @@ def connect():
     asyncio.get_event_loop().run_until_complete(socket())
     clear()
 
-sat_id = ""
 
 
 def main():
@@ -135,20 +145,20 @@ def main():
             clear()
             start = input("\n[Press enter to start]")
             clear()
-            #set norad id for sattracker.py
-            #assign two different variables so it doesn't ask for sat id twice
-            sat_id = input("\nSatellite ID: ")
+            #set norad id for sattracker.py in environment variable so sattracker can see it
+            sat_id = input("\nSatellite ID: ").replace(" ", "")
             clear()
             #set command to launch sattracker for now
-            terminalcommand= "conda activate satcom && python /Users/ziad/cubesat/scripts/sattracker.py"
-            tell.app( 'Terminal', 'do script "' + terminalcommand + '"') 
+            terminalcommand= f"conda activate satcom && SATID={sat_id} python {pwd}/sattracker.py"
+
+            tell.app('Terminal', 'do script "' + terminalcommand + '"') 
             #set variable that controls while loop
             #while loop enables mutiple commands to one db
             again = "y"
             while again == "y":
-                
+
                 connect()
-            
+
                 if error == False:
                     print("\n[OK]")
                     time.sleep(1)
@@ -167,14 +177,22 @@ def main():
                             pass
                     #gonna add more commands to client and sqlquery later
                 clear()
-                another_cmd = input("\nSend another command? [y/n]: ")
-                if another_cmd != "y":
-                    again = another_cmd
+                if notconnect == False:
+                    another_cmd = input("\nSend another command? [y/n]: ")
+                    another_cmd = another_cmd.replace(" ", "")
+                    if another_cmd.lower() != "y":
+                        again = another_cmd
+                        tell.app( 'Terminal', 'do script "' + "exit" + '"')
+                else:
+                    tell.app( 'Terminal', 'do script "' + "exit" + '"')
+                    break
+                    
 
     except KeyboardInterrupt:
         clear()
         print("\n[Quitting]")
         time.sleep(0.6)
+        tell.app( 'Terminal', 'do script "' + "kill -9 $$" + '"')
         clear()
         quit
 

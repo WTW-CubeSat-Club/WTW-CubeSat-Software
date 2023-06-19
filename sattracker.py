@@ -2,9 +2,9 @@ import requests
 from datetime import datetime
 import time
 from client import clear
-#from client import sat_id
+import os
 
-sat_id ="25544"
+
 
 """ 
 note:
@@ -39,6 +39,10 @@ api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 update = 5
 
 
+
+#recieving NORAD ID from client
+sat_id = os.environ.get("SATID")
+
 def main():
     try:
         #need to copy code here so we can let the user know its initializing and not clear the whole screen later on
@@ -47,7 +51,6 @@ def main():
         print("[Initializing]")
         current_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
-        #global pass_data_req
         pass_data_req = requests.get(
             url=f"https://api.n2yo.com/rest/v1/satellite/visualpasses/{sat_id}/{lat}/{lng}/{elevation}/{days}/{min_visibility}/&apiKey={api_key}")
         first = True
