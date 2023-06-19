@@ -33,48 +33,49 @@ async def socket():
     error = True
     global notconnect
     notconnect = False
-    try:
-        async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
-            while True:
-                clear()
-                print("\n[Ground station client]")
-                #lowercase and get rid of spaces
-                global command
-                command = input("\nCommand: ").lower()
-                command = command.replace(" ", "")
-                await websocket.send(command)
-                global start_time
-                start_time = input("Start time: ")
-                #get rid of spaces
-                start_time = start_time.replace(" ", "")
-                await websocket.send(start_time)
-                end_time = input("End time: ")
-                #get rid of spaces
-                end_time = end_time.replace(" ", "")
-                await websocket.send(end_time)
-                #lower and get rid of spaces
-                global data_type
-                data_type = input("Data type: ").lower()
-                data_type = data_type.replace(" ", "")
-                await websocket.send(data_type)
-                global unparsed
-                unparsed = await websocket.recv()
-                error = False
-                break
+    localcmds ="tracker"
+    global command
+    command = input("\nCommand: ").lower().replace(" ", "")
+    if command in localcmds:
+        error = False
+
+    if command not in localcmds:
+        try:
+            async with websockets.connect('wss://localhost:8000', ssl=ssl_context) as websocket:
+                while True:
+                    clear()
+                    print("\n[Ground station client]")
+                    #lowercase and get rid of spaces
+                    await websocket.send(command)
+                    global start_time
+                    #get rid of spaces
+                    start_time = input("Start time: ").replace(" ", "")
+                    await websocket.send(start_time)
+                    #get rid of spaces
+                    end_time = input("End time: ").replace(" ", "")
+                    await websocket.send(end_time)
+                    #lower and get rid of spaces
+                    global data_type
+                    data_type = input("Data type: ").lower().replace(" ", "")
+                    await websocket.send(data_type)
+                    global unparsed
+                    unparsed = await websocket.recv()
+                    error = False
+                    break
 
     
-    #display error if connect fails
-    except OSError:
-        clear()
-        print("\n[Could  not connect]")
-        notconnect = True
-        time.sleep(1.5)
+        #display error if connect fails
+        except OSError:
+            clear()
+            print("\n[Could  not connect]")
+            notconnect = True
+            time.sleep(1.5)
     
-    #display error for invalid params
-    except websockets.exceptions.ConnectionClosedError:
-        clear()
-        print("\n[Parameters are invalid]")
-        time.sleep(1.5)
+        #display error for invalid params
+        except websockets.exceptions.ConnectionClosedError:
+            clear()
+            print("\n[Parameters are invalid]")
+            time.sleep(1.5)
         
 #parse y list given as a string
 def parse(list):
@@ -148,10 +149,6 @@ def main():
             #set norad id for sattracker.py in environment variable so sattracker can see it
             sat_id = input("\nSatellite ID: ").replace(" ", "")
             clear()
-            #set command to launch sattracker for now
-            terminalcommand= f"conda activate satcom && SATID={sat_id} python {pwd}/sattracker.py"
-
-            tell.app('Terminal', 'do script "' + terminalcommand + '"') 
             #set variable that controls while loop
             #while loop enables mutiple commands to one db
             again = "y"
@@ -163,7 +160,7 @@ def main():
                     print("\n[OK]")
                     time.sleep(1)
                     clear()
-                    if command == "get":
+                    if command.lower() == "get":
                         if data_type != "images" or data_type != "pictures":
                             parse(unparsed)
                             x_list = makeXList(start_time)
@@ -175,16 +172,21 @@ def main():
                         else:
                             #will add stuff to deal with images later
                             pass
+
+                    if command.lower().replace(" ", "") == "tracker":
+                        terminalcommand= f"conda activate satcom && SATID={sat_id} python {pwd}/sattracker.py"
+                        tell.app('Terminal', 'do script "' + terminalcommand + '"') 
                     #gonna add more commands to client and sqlquery later
                 clear()
                 if notconnect == False:
                     another_cmd = input("\nSend another command? [y/n]: ")
+                    clear()
                     another_cmd = another_cmd.replace(" ", "")
                     if another_cmd.lower() != "y":
                         again = another_cmd
-                        tell.app( 'Terminal', 'do script "' + "exit" + '"')
+                        tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
                 else:
-                    tell.app( 'Terminal', 'do script "' + "exit" + '"')
+                    tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
                     break
                     
 
@@ -192,7 +194,7 @@ def main():
         clear()
         print("\n[Quitting]")
         time.sleep(0.6)
-        tell.app( 'Terminal', 'do script "' + "kill -9 $$" + '"')
+        tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
         clear()
         quit
 
