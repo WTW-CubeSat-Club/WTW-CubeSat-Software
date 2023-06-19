@@ -1,4 +1,4 @@
-# WTW-Cubesat
+# W.T. Woodson HS cubeSat Club
 repo for wtw cubesat program (software stuff)
 will also add resources for anyone who wants to contibute but doesn't know where to start
 
