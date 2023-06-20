@@ -7,8 +7,8 @@ there are two main parts that we need to work on:
   the ground station/server side, 
   SQL database (both ground station and satellite)
 
-# LICENSE DISCLAIMER
+# LICENSE INFO
 
-As stated in [Github's Choose a licensed website](https://choosealicense.com/no-permission/), a license can allow a repository to be open source while still being copyright. Please read LICENSE carefully to see what you are allowed to do if you're not a W.T. Woodson HS CubeSat Club team member. 
+As stated in [Github's Choose a licensed website](https://choosealicense.com/no-permission/), a license can allow a repository to be open source while still being copyrighted. Please read LICENSE (this repository utilize the GPL-3.0 license) carefully to see what you are allowed to do if you're not a W.T. Woodson HS CubeSat Club team member. 
 
 Copyright © 2023 W.T. Woodson HS CubeSat Club | All rights reserved
