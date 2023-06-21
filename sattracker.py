@@ -64,7 +64,7 @@ def main():
                 try:
                     retrive = True
                     #checks to see if it needs to retrive and skips block if its run for the first time
-                    while retrive == True and first == False:
+                    while retrive and not first:
                         start_time=time.time()
                         current_data_req = requests.get(
                             url=f"https://api.n2yo.com/rest/v1/satellite/positions/{sat_id}/{lat}/{lng}/{elevation}/{sec}/&apiKey={api_key}")
