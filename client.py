@@ -6,10 +6,10 @@ import sys
 import subprocess
 import matplotlib.pyplot as plt
 import csv
-import os
 import time
 if sys.platform == "darwin":
     from applescript import tell
+import pexpect
 
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -29,10 +29,9 @@ def clear():
         subprocess.run("clear")
 
 async def socket():
+    #error tells program if conection succeeded or not
     global error
     error = True
-    global notconnect
-    notconnect = False
     localcmds ="tracker"
     global command
     command = input("\nCommand: ").lower().replace(" ", "")
@@ -68,7 +67,6 @@ async def socket():
         except OSError:
             clear()
             print("\n[Could  not connect]")
-            notconnect = True
             time.sleep(1.5)
     
         #display error for invalid params
@@ -135,6 +133,16 @@ def connect():
     asyncio.get_event_loop().run_until_complete(socket())
     clear()
 
+def startTracker(sat_id):
+    if sys.platform == "linux" or sys.platform == "linux2":
+        command = f'python {pwd}/sattracker.py'
+        subprocess.Popen('xterm -hold -e "%s"' % command)
+    if sys.platform == "darwin":
+        terminalcommand= f"conda activate satcom && SATID={sat_id} python {pwd}/sattracker.py"
+        tell.app('Terminal', 'do script "' + terminalcommand + '"') 
+
+
+
 
 
 def main():
@@ -147,6 +155,7 @@ def main():
             start = input("\n[Press enter to start]")
             clear()
             #set norad id for sattracker.py in environment variable so sattracker can see it
+            print("\n[Ground station client]")
             sat_id = input("\nSatellite ID: ").replace(" ", "")
             clear()
             #set variable that controls while loop
@@ -174,20 +183,17 @@ def main():
                             pass
 
                     if command.lower().replace(" ", "") == "tracker":
-                        terminalcommand= f"conda activate satcom && SATID={sat_id} python {pwd}/sattracker.py"
-                        tell.app('Terminal', 'do script "' + terminalcommand + '"') 
-                    #gonna add more commands to client and sqlquery later
-                clear()
-                if notconnect == False:
+                        startTracker(sat_id)
+                        clear()
+                if error == False:
                     another_cmd = input("\nSend another command? [y/n]: ")
                     clear()
                     another_cmd = another_cmd.replace(" ", "")
                     if another_cmd.lower() != "y":
                         again = another_cmd
-                        tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
-                else:
-                    tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
-                    break
+    
+                    else:
+                        break
                     
 
     except KeyboardInterrupt:

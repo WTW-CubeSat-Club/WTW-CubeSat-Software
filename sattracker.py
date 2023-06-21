@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 from client import clear
 import os
+import psutil
 
 
 
@@ -44,6 +45,12 @@ update = 5
 sat_id = os.environ.get("SATID")
 
 def main():
+    #check if another instance is running and quit if it is
+    for q in psutil.process_iter():
+        if 'python' in q.name():
+            if len(q.cmdline()) > 1 and "sattracker.py" in q.cmdline()[1]:
+                os.system("kill -9 $(ps -p $PPID -o ppid=)")
+                
     try:
         #need to copy code here so we can let the user know its initializing and not clear the whole screen later on
         #that way ui can update fast and without the user noticing
