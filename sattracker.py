@@ -34,7 +34,7 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = "Enter API key"
+api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
 update = 5
@@ -42,14 +42,10 @@ update = 5
 
 
 #recieving NORAD ID from client
-sat_id = os.environ.get("SATID")
+#sat_id = os.environ.get("SATID")
+sat_id = "25544"
 
 def main():
-    #check if another instance is running and quit if it is
-    for q in psutil.process_iter():
-        if 'python' in q.name():
-            if len(q.cmdline()) > 1 and "sattracker.py" in q.cmdline()[1]:
-                os.system("kill -9 $(ps -p $PPID -o ppid=)")
                 
     try:
         #need to copy code here so we can let the user know its initializing and not clear the whole screen later on
@@ -124,8 +120,8 @@ def main():
                     except:
                         print(f"No available pass data for the next {days} days")
 
-                except TypeError:#(requests.exceptions.JSONDecodeError, KeyError, IndexError):
-                    #clear()
+                except (requests.exceptions.JSONDecodeError, KeyError, IndexError):
+                    clear()
                     print("\n[Error occurred while parsing data]")
                     time.sleep(3)
                     clear()
