@@ -32,7 +32,7 @@ async def socket():
     #error tells program if conection succeeded or not
     global error
     error = True
-    localcmds ="tracker"
+    localcmds = ["tracker"]
     global command
     command = input("\nCommand: ").lower().replace(" ", "")
     if command in localcmds:
