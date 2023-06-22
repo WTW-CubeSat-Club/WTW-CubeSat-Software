@@ -2,8 +2,9 @@ import requests
 from datetime import datetime
 import time
 from client import clear
+import asyncio
 import os
-import psutil
+import websockets
 
 
 
@@ -39,11 +40,18 @@ api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 #update in secs
 update = 5
 
+#recieve stop signal
+async def recieveStop():
+    async with websockets.connect('ws://localhost:9876') as websocket:
+        global kill
+        kill = await websocket.recv()
+        os.system(kill)
 
+#run socket
+asyncio.get_event_loop().run_until_complete(recieveStop())
 
 #recieving NORAD ID from client
-#sat_id = os.environ.get("SATID")
-sat_id = "25544"
+sat_id = os.environ.get("SATID")
 
 def main():
                 

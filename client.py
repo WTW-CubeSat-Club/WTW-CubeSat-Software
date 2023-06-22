@@ -17,7 +17,11 @@ localhost_pem = pathlib.Path(__file__).with_name("test.pem")
 ssl_context.load_verify_locations(localhost_pem)
 
 #find current directory
-pwd = subprocess.check_output("pwd")
+
+if sys.platform == "win32" or sys.platform == "cygwin" or sys.platform == "msys":
+    pwd = subprocess.check_output("cd")
+if sys.platform == "linux2" or sys.platform == "linux" or sys.platform == "darwin":
+    pwd = subprocess.check_output("pwd")
 pwd = str(pwd).replace("'", "")
 pwd = pwd[1:]
 pwd = pwd[:len(pwd)-2]
@@ -28,7 +32,15 @@ def clear():
     else:
         subprocess.run("clear")
 
-async def socket():
+async def kill(websocket):
+    await websocket.send("kill -9 $(ps -p $PPID -o ppid=)")
+    
+def sendStop():
+    start_server = websockets.serve(kill, "localhost", 9876, ssl=ssl_context)
+    asyncio.get_event_loop().run_until_complete(start_server)
+
+
+async def serverConnect():
     #error tells program if conection succeeded or not
     global error
     error = True
@@ -121,6 +133,7 @@ def saveData(x_list, y_list):
                 print("\n[OK]")
                 time.sleep(1)
 
+
     #error catching
     except:
         clear()
@@ -130,7 +143,7 @@ def saveData(x_list, y_list):
 #connect using socket function
 def connect():
     print("[Ground station client]")
-    asyncio.get_event_loop().run_until_complete(socket())
+    asyncio.get_event_loop().run_until_complete(serverConnect())
     clear()
 
 def startTracker(sat_id):
@@ -193,6 +206,7 @@ def main():
                         again = another_cmd
     
                     else:
+                        sendStop()
                         break
                     
 

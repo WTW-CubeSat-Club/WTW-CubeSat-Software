@@ -11,7 +11,7 @@ console = sqlquery.sql()
 
 # create handler for each connection
 
-async def handler(websocket, path):
+async def handler(websocket):
     while True:
         command = await websocket.recv()
         print(command)
