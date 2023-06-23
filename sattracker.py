@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 from client import clear
 import os
+import subprocess
 
 
 
@@ -44,6 +45,7 @@ update = 5
 #recieving NORAD ID from client
 sat_id = os.environ.get("SATID")
 
+
 def main():
                 
     try:
@@ -58,6 +60,7 @@ def main():
         first = True
         clear()
         while True:
+            #if samedb == "1":
             #nested try statement because connection error might occur multiple times
             try:
                 try:

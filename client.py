@@ -194,7 +194,7 @@ def main():
                             pass
 
                     if command.lower().replace(" ", "") == "tracker":
-                        stoplistener = pexpect.spawn(f"python {pwd}/stoplistener.py")
+                        #gave up on auto quit for now, will deal with it later
                         startTracker(sat_id)
                         clear()
                 if error == False:
@@ -205,8 +205,7 @@ def main():
                         again = another_cmd
     
                     else:
-                        #you could send anything, it just needs an input
-                        stoplistener.sendline("stop")
+                        #need to find a way to auto quit tracker
                         break
                     
 
