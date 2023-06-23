@@ -2,9 +2,7 @@ import requests
 from datetime import datetime
 import time
 from client import clear
-import asyncio
 import os
-import websockets
 
 
 
@@ -35,20 +33,13 @@ days = "9"
 min_visibility = "180"
 
 #api key
-api_key = "Enter API key"
+api_key = "MJYHCZ-7JQTH8-KK84CG-51XK"
 
 #update in secs
 update = 5
 
-#recieve stop signal
-async def recieveStop():
-    async with websockets.connect('ws://localhost:9876') as websocket:
-        global kill
-        kill = await websocket.recv()
-        os.system(kill)
-
 #run socket
-asyncio.get_event_loop().run_until_complete(recieveStop())
+#asyncio.get_event_loop().run_until_complete(recieveStop())
 
 #recieving NORAD ID from client
 sat_id = os.environ.get("SATID")
@@ -142,6 +133,7 @@ def main():
                     secs -= 1
                     time.sleep(0.95)
                 
+            #asyncio.get_event_loop().run_until_complete(recieveStop())
 
                     
     except KeyboardInterrupt:

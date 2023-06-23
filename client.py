@@ -11,6 +11,8 @@ if sys.platform == "darwin":
     from applescript import tell
 import pexpect
 
+#controls stop msg to tracker
+stopping = False
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 localhost_pem = pathlib.Path(__file__).with_name("test.pem")
@@ -32,13 +34,9 @@ def clear():
     else:
         subprocess.run("clear")
 
-async def kill(websocket):
-    await websocket.send("kill -9 $(ps -p $PPID -o ppid=)")
-    
-def sendStop():
-    start_server = websockets.serve(kill, "localhost", 9876, ssl=ssl_context)
-    asyncio.get_event_loop().run_until_complete(start_server)
 
+#await websocket.send("kill -9 $(ps -p $PPID -o ppid=)")
+    
 
 async def serverConnect():
     #error tells program if conection succeeded or not
@@ -60,7 +58,7 @@ async def serverConnect():
                     await websocket.send(command)
                     global start_time
                     #get rid of spaces
-                    start_time = input("Start time: ").replace(" ", "")
+                    start_time = input("\nStart time: ").replace(" ", "")
                     await websocket.send(start_time)
                     #get rid of spaces
                     end_time = input("End time: ").replace(" ", "")
@@ -142,7 +140,7 @@ def saveData(x_list, y_list):
 
 #connect using socket function
 def connect():
-    print("[Ground station client]")
+    print("\n[Ground station client]")
     asyncio.get_event_loop().run_until_complete(serverConnect())
     clear()
 
@@ -196,6 +194,7 @@ def main():
                             pass
 
                     if command.lower().replace(" ", "") == "tracker":
+                        stoplistener = pexpect.spawn(f"python {pwd}/stoplistener.py")
                         startTracker(sat_id)
                         clear()
                 if error == False:
@@ -206,7 +205,8 @@ def main():
                         again = another_cmd
     
                     else:
-                        sendStop()
+                        #you could send anything, it just needs an input
+                        stoplistener.sendline("stop")
                         break
                     
 
