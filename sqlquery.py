@@ -1,8 +1,9 @@
 import time
 import initalize
 import sqlite3
+import subprocess
 
-conn = sqlite3.connect("data.db")
+conn = sqlite3.connect("dbs/data.db")
 c = conn.cursor()
 
 def parse(data):
@@ -72,8 +73,8 @@ class sql:
         return y_list      
 
     def append(self, data_type, data):
-        #callable names
-        supported_names= "tempaltitudeairpressuregpsimagepicturetemperature"
+        #callable names, also prevents sql injection
+        supported_names= ["temp","altitude","airpressure","gps","image","picture","temperature"]
         #get rid of spaces
         data_type = data_type.replace(" ", "")
         if data_type.lower() == "temp":
@@ -84,7 +85,7 @@ class sql:
             c.execute("""INSERT INTO temp VALUES (?, ?)""", (round(time.time()), data))
         if data_type.lower() == "gps" :
             c.execute("""INSERT INTO gps VALUES (?, ?)""", (round(time.time()), data))
-        #fix this later
+        #data will be image path
         if data_type.lower() == "image" or data_type.lower() == "pictures":
             c.execute("""INSERT INTO  images VALUES (?, ?)""", (round(time.time()), data))
         #support for one unsupported data type per db in the form of the "other" collom

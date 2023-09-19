@@ -171,8 +171,7 @@ def main():
             clear()
             #set variable that controls while loop
             #while loop enables mutiple commands to one db
-            again = "y"
-            while again == "y":
+            while True:
 
                 connect()
 
@@ -200,9 +199,8 @@ def main():
                 if error == False:
                     another_cmd = input("\nSend another command? [y/n]: ")
                     clear()
-                    another_cmd = another_cmd.replace(" ", "")
-                    if another_cmd.lower() != "y":
-                        again = another_cmd
+                    if another_cmd.lower() == "y":
+                        pass
     
                     else:
                         #need to find a way to auto quit tracker
@@ -213,9 +211,8 @@ def main():
         clear()
         print("\n[Quitting]")
         time.sleep(0.6)
+        tell.app( 'Terminal', 'do script "' + "clear" + '"')
         tell.app( 'Terminal', 'do script "' + "kill -9 $(ps -p $PPID -o ppid=)" + '"')
-        clear()
-        quit
 
 
 
