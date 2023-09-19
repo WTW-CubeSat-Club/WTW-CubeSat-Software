@@ -1,6 +1,6 @@
 import asyncio
 import sqlite3
-import sqlquery
+import sqlquery as sqlquery
 import websockets 
 import pathlib
 import ssl
@@ -15,7 +15,7 @@ async def handler(websocket):
     while True:
         command = await websocket.recv()
         print(command)
-        #atellite communication protocol is still not known
+        #satellite communication protocol is still not known
         start_time_str = await websocket.recv()
         start_time=int(start_time_str)
         print(start_time)

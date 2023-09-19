@@ -1,104 +1,143 @@
 import time
-import initalize
 import sqlite3
-import subprocess
+import os
+import csv
+import calendar
+import mail
+import webbot
+import env_vars
+import os
 
-conn = sqlite3.connect("dbs/data.db")
-c = conn.cursor()
+norad_id = "33499"
+norad_id = norad_id.replace(" ", "")
+script_dir = env_vars.script_dir
 
-def parse(data):
-        unparsed_data = str(data)
-        final_data = 0
+#read downloaded csv cache
+def readCSV(norad_id):
+    timestamps_raw = []
+    frames_raw = []
+    timestamps = []
+    frames = []
+    # opening the CSV file
+    with open(f"{script_dir}csv_cache/{norad_id}data.csv", mode ='r')as file:
+        # reading the CSV file
+        csvFile = csv.reader(file)
+
+        # displaying the contents of the CSV file
+        for line in csvFile:
+            str_line = line[0]
+            split_line = str_line.split("|")
+            timestamp = str(calendar.timegm(time.strptime(split_line[0], '%Y-%m-%d %H:%M:%S')))
+            timestamps_raw.append(timestamp)
+            frames_raw.append(split_line[1])
+        #remove duplicates
+        for i in range(len(frames_raw)-1):
+            if frames_raw[i] not in frames:
+                frames.append(frames_raw[i])
+                timestamps.append(timestamps_raw[i])
+    print(len(timestamps_raw))
+    print(len(timestamps))
+    #reverse lists to it can go from end time to start time
+    timestamps.reverse()
+    frames.reverse()
+    os.remove(f"{script_dir}csv_cache/{norad_id}data.csv")
         
-        step1 = unparsed_data.replace("[", "")
-        step2 = step1.replace("(", "")
-        step3 = step2.replace(")", "")
-        final_data = step3.replace("]", "")
-        if final_data == "":
-            final_data = "0,"
-        return final_data
+    return timestamps, frames
+
+
+
+
+
+#this is a text function that imitates requests from server.py
+#checks if database exists, if not creates database and populates it with csv cache
+#path to dbs will change depending on which folder you run the script in in vscode
+
+has_satellite = os.path.exists(f"scripts/dbs/{norad_id}.db")
+if not has_satellite:
+    create_db = input("Do you want to create a new database? ")
+    if create_db.lower() == "y":
+        conn = sqlite3.connect(f"{script_dir}dbs/{norad_id}.db")
+        c = conn.cursor()
+        c.execute("""CREATE TABLE IF NOT EXISTS data (
+            unix_time integer,
+            data blob
+        )""")
+    
+        print("clicking link\n")
+        webbot.clicker(norad_id)
+        print("fetching link\n")
+        link = mail.fetch(mail.user, mail.passwd)
+        print("downloading csv\n")
+        file = mail.download(link, norad_id)
+
+        #path to cache will change depending on which folder you run the script in in vscode
+        print("reading csv\n")
+
+        timestamps, frames = readCSV(norad_id)
+        print(timestamps)
+        print("done reading\n")
+
+        
+
+
+
+
+
+
 
 class sql:
 
+    #not done defining init func
+    def __init__(self, norad_id):
+        self.norad_id = norad_id
+        self.conn = sqlite3.connect(f"{script_dir}dbs/{norad_id}.db")
+        self.c = self.conn.cursor()
 
     table = ""
     #no init method needed
-    def get(self, start_time, end_time, data_type):
-        y_list =  ""
-        data_type = data_type.replace(" ", "")
+    def get(self, start_time, end_time):
+        y_list =  []
         #find data_type and set which table we are querying, using single quotes so sqlite doesn't get confused
-        if data_type.lower() == "temp":
-            while start_time <= end_time:
-                #convert into str because sqlite is picky like that
-                str_time = "%s" % start_time
-                c.execute("""SELECT data FROM temp WHERE unix_time = ?""", [str_time])
-                data = c.fetchall()
-                y_list += str(parse(data))
-                print(y_list)
-                start_time+=1
-                
+        self.c.execute("""SELECT * FROM data""")
+        data = self.c.fetchall()
+        for i in range(len(data)-1):
+            if int(data[i][0]) >= start_time and int(data[i][0]) <= end_time:
+                y_list.append(data[i][1])
 
-        if data_type.lower() == "altitude":
-            while start_time <= end_time:
-                #convert into str because sqlite is picky like that
-                str_time = "%s" % start_time
-                c.execute("""SELECT data FROM altitude WHERE unix_time = ?""", [str_time])
-                data = c.fetchall()
-                y_list += str(parse(data))
-                print(y_list)
-                start_time+=1
-
-        if data_type.lower() == "airpressure":
-            while start_time <= end_time:
-                #convert into str because sqlite is picky like that
-                str_time = "%s" % start_time
-                c.execute("""SELECT data FROM airpressure WHERE unix_time = ?""", [str_time])
-                data = c.fetchall()
-                y_list += str(parse(data))
-                print(y_list)
-                start_time+=1
-
-        if data_type == "gps":
-            while start_time <= end_time:
-                #convert into str because sqlite is picky like that
-                str_time = "%s" % start_time
-                c.execute("""SELECT data FROM gps WHERE unix_time = ?""", [str_time])
-                data = c.fetchall()
-                y_list += str(parse(data))
-                print(y_list)
-                start_time+=1
-
-        #remove extra comma
-        y_list = y_list[:-1]
+    
+        print(y_list)
         return y_list      
 
-    def append(self, data_type, data):
-        #callable names, also prevents sql injection
-        supported_names= ["temp","altitude","airpressure","gps","image","picture","temperature"]
+    def append(self, timestamps, frames):
         #get rid of spaces
-        data_type = data_type.replace(" ", "")
-        if data_type.lower() == "temp":
-            c.execute("""INSERT INTO temp VALUES (?, ?)""", (round(time.time()), data))
-        if data_type.lower() == "altitude":
-            c.execute("""INSERT INTO altitude VALUES (?, ?)""", (round(time.time()), data))
-        if data_type.lower() == "airpressure" or data_type.lower() == "air pressure":
-            c.execute("""INSERT INTO temp VALUES (?, ?)""", (round(time.time()), data))
-        if data_type.lower() == "gps" :
-            c.execute("""INSERT INTO gps VALUES (?, ?)""", (round(time.time()), data))
-        #data will be image path
-        if data_type.lower() == "image" or data_type.lower() == "pictures":
-            c.execute("""INSERT INTO  images VALUES (?, ?)""", (round(time.time()), data))
-        #support for one unsupported data type per db in the form of the "other" collom
-        if data_type not in supported_names:
-            c.execute("""INSERT INTO other VALUES (?, ?)""", (round(time.time()), data))
-        else:
-            print("[Data type not in DB]")
-            conn.commit()
+        for i in range(len(frames)-1):
+            self.c.execute("""INSERT INTO data VALUES (?, ?)""", (timestamps[i], frames[i]))
+            print(timestamps[i],frames[i])
+    
+        self.conn.commit()
+
+    
+
+#print(timestamps)
+#print(frames)
+
+console = sql(norad_id)
+
+print("appending to sql db\n")
+console.append(timestamps, frames)
+print("finished")
 
 
+#console.get(1693464165, 1693541620)
 
-console = sql()
-#console.get(1685335865, 1685335870, "temp")
-console.append("", 96.42)
-#c.execute("SELECT * FROM temp")
-#print(c.fetchall())
+
+#console.get(1530633289, 1688256077)
+#console.append("", 96.42)
+
+
+#conn = sqlite3.connect(f"dbs/{norad_id}.db")
+#c = conn.cursor()
+
+print("retriving from the db to check if there's data in it\n")
+time.sleep(2)
+console.get(1682216500, 1691549246)

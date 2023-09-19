@@ -7,10 +7,11 @@ import subprocess
 import matplotlib.pyplot as plt
 import csv
 import time
+"""
 if sys.platform == "darwin":
     from applescript import tell
-import pexpect
 
+"""
 #controls stop msg to tracker
 stopping = False
 
