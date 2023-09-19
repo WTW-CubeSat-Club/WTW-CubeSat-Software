@@ -52,7 +52,7 @@ def readCSV(norad_id):
 #checks if database exists, if not creates database and populates it with csv cache
 #path to dbs will change depending on which folder you run the script in in vscode
 
-has_satellite = os.path.exists(f"scripts/dbs/{norad_id}.db")
+has_satellite = os.path.exists(f"{script_dir}/dbs/{norad_id}.db")
 if not has_satellite:
     create_db = input("Do you want to create a new database? ")
     if create_db.lower() == "y":
@@ -66,7 +66,7 @@ if not has_satellite:
         print("clicking link\n")
         webbot.clicker(norad_id)
         print("fetching link\n")
-        link = mail.fetch(mail.user, mail.passwd)
+        link = mail.fetch(env_vars.mail_user, env_vars.mail_passwd)
         print("downloading csv\n")
         file = mail.download(link, norad_id)
 

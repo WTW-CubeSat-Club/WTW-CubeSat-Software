@@ -1,6 +1,6 @@
 import imaplib
 import urllib.request
-import scripts.env_vars as env_vars
+import env_vars
 
 
 
