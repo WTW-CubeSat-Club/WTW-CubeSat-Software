@@ -2,6 +2,7 @@ import imaplib
 import urllib.request
 import env_vars
 
+script_dir = env_vars.script_dir
 
 
 def fetch(username, password):
@@ -15,7 +16,6 @@ def fetch(username, password):
     print(nums)
     for num in nums[0].split():
         _, email_raw = mailbox.fetch(num, "(RFC822)")
-        #print(email_raw)
         #remove most of email
         email_raw = str(email_raw)[-249:]
         print(email_raw)
@@ -25,14 +25,11 @@ def fetch(username, password):
     
     return link
 
-
-
-#link = fetch(user, passwd)
-#print(link)
+#downloads data in csv format
 def download(link, norad_id):
     #path to cache will change depending on which folder you run the script in in vscode
-    with urllib.request.urlopen(link) as csvfile, open(f'scripts/csv_cache/{norad_id}data.csv', 'w') as f:
+    with urllib.request.urlopen(link) as csvfile, open(f'{script_dir}csv_cache/{norad_id}data.csv', 'w') as f:
         f.write(csvfile.read().decode())
 
-#download(link)
+
 
