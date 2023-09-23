@@ -5,12 +5,13 @@ import time
 import pickle
 import env_vars
 
+script_dir = env_vars.script_dir
 web = webdriver.Chrome()
 
     
-def load_cookies(filepath):
+def load_cookies():
 
-     with open(env_vars.script_dir+"satnogs_cookies", 'rb') as cookiesfile:
+     with open(f"{script_dir}/satnogs_cookies", 'rb') as cookiesfile:
          cookies = pickle.load(cookiesfile)
          print("loaded cookies")
          for cookie in cookies:
@@ -24,7 +25,7 @@ def save_cookies():
     firefox.get('https://db.satnogs.org/')
     time.sleep(30)
     #save cookies
-    with open(env_vars.script_dir+"satnogs_cookies", 'wb') as filehandler:
+    with open(f"{script_dir}/satnogs_cookies", 'wb') as filehandler:
         pickle.dump(firefox.get_cookies(), filehandler)
     print(firefox.get_cookies)
 
@@ -32,14 +33,13 @@ def save_cookies():
 
 
 
-def clicker(norad_id):
+def clicker(norad_id:int):
+    norad_id = str(norad_id)
     web.get('https://db.satnogs.org/')
     time.sleep(1)
     #replace this with pwd and path, and do the same for all paths in the code (mostly sqlquery)
-    load_cookies("/Users/ziad/cubesat/scripts/satnogs_cookies")
+    load_cookies()
     web.get('https://db.satnogs.org/')
-
-
     time.sleep(1)
     search_box = web.find_element(By.ID, "search")
     search_box.send_keys(norad_id + Keys.RETURN)
@@ -49,9 +49,3 @@ def clicker(norad_id):
     web.find_element(By.LINK_TEXT, "Everything").click()
     time.sleep(1)
 
-
-
-
-#save_cookies()
-
-#clicker("44406")

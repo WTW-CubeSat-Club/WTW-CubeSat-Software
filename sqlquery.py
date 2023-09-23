@@ -8,12 +8,11 @@ import webbot
 import env_vars
 import os
 
-norad_id = "41619"
-norad_id = norad_id.replace(" ", "")
+norad_id = 41619
 script_dir = env_vars.script_dir
 
 #read downloaded csv cache
-def readCSV(norad_id):
+def readCSV(norad_id:int):
     timestamps_raw = []
     frames_raw = []
     timestamps = []
@@ -56,7 +55,7 @@ has_satellite = os.path.exists(f"{script_dir}/dbs/{norad_id}.db")
 if not has_satellite:
     create_db = input("Do you want to create a new database? ")
     if create_db.lower() == "y":
-        conn = sqlite3.connect(f"{script_dir}dbs/{norad_id}.db")
+        conn = sqlite3.connect(f"{script_dir}/dbs/{norad_id}.db")
         c = conn.cursor()
         c.execute("""CREATE TABLE IF NOT EXISTS data (
             unix_time integer,
@@ -87,15 +86,14 @@ if not has_satellite:
 
 class sql:
 
-    #not done defining init func
-    def __init__(self, norad_id):
-        self.norad_id = norad_id
-        self.conn = sqlite3.connect(f"{script_dir}dbs/{norad_id}.db")
+    def __init__(self, norad_id:int):
+        self.norad_id = str(norad_id)
+        self.conn = sqlite3.connect(f"{script_dir}/dbs/{norad_id}.db")
         self.c = self.conn.cursor()
 
     table = ""
     #no init method needed
-    def get(self, start_time, end_time):
+    def get(self, start_time:int, end_time:int):
         y_list =  []
         #find data_type and set which table we are querying, using single quotes so sqlite doesn't get confused
         self.c.execute("""SELECT * FROM data""")
@@ -108,7 +106,7 @@ class sql:
         print(y_list)
         return y_list      
 
-    def append(self, timestamps, frames):
+    def append(self, timestamps:list, frames:list):
         #get rid of spaces
         for i in range(len(frames)-1):
             self.c.execute("""INSERT INTO data VALUES (?, ?)""", (timestamps[i], frames[i]))
@@ -117,16 +115,17 @@ class sql:
         self.conn.commit()
 
     
+#anything beyond this point is for testing
 
 #print(timestamps)
 #print(frames)
-
+"""
 console = sql(norad_id)
-
-print("appending to sql db\n")
-console.append(timestamps, frames)
-print("finished")
-
+if not has_satellite:
+    print("appending to sql db\n")
+    console.append(timestamps, frames)
+    print("finished")
+"""
 
 #console.get(1693464165, 1693541620)
 
@@ -137,7 +136,3 @@ print("finished")
 
 #conn = sqlite3.connect(f"dbs/{norad_id}.db")
 #c = conn.cursor()
-
-print("retriving from the db to check if there's data in it\n")
-time.sleep(2)
-console.get(1682216500, 1691549246)
