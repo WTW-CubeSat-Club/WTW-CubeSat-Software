@@ -19,7 +19,7 @@ def load_cookies():
             web.add_cookie(cookie)
 
 def save_cookies():
-    #it only wopks if you get cookies with firefox
+    #it only works if you get cookies with firefox
     firefox = webdriver.Firefox()
     #get website and wait for you to enter username and password
     firefox.get('https://db.satnogs.org/')
@@ -37,7 +37,6 @@ def clicker(norad_id:int):
     norad_id = str(norad_id)
     web.get('https://db.satnogs.org/')
     time.sleep(1)
-    #replace this with pwd and path, and do the same for all paths in the code (mostly sqlquery)
     load_cookies()
     web.get('https://db.satnogs.org/')
     time.sleep(1)
@@ -48,4 +47,3 @@ def clicker(norad_id:int):
     time.sleep(1)
     web.find_element(By.LINK_TEXT, "Everything").click()
     time.sleep(1)
-

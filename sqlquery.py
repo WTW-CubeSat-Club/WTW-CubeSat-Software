@@ -8,7 +8,7 @@ import webbot
 import env_vars
 import os
 
-norad_id = 41619
+norad_id = 25544
 script_dir = env_vars.script_dir
 
 #read downloaded csv cache
@@ -119,12 +119,11 @@ class sql:
 
 #print(timestamps)
 #print(frames)
+#console = sql(norad_id)
 """
-console = sql(norad_id)
-if not has_satellite:
-    print("appending to sql db\n")
-    console.append(timestamps, frames)
-    print("finished")
+print("appending to sql db\n")
+console.append(timestamps, frames)
+print("finished")
 """
 
 #console.get(1693464165, 1693541620)
