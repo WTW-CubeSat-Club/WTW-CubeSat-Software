@@ -88,7 +88,7 @@ def genTimestamps(update_duration:int):
 
 
  
-def updateTelemetry(norad_id:int, start_time, end_time):
+def updateTelemetry(norad_id:int, start_time:str, end_time:str):
 
 
     try_again = True
