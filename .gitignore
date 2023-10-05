@@ -2,3 +2,4 @@
 __pycache__
 *.pem
 geckodriver.log
+.DS_Store
