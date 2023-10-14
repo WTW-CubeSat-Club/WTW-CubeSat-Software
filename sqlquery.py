@@ -51,30 +51,7 @@ def readCSV(norad_id:int):
 #checks if database exists, if not creates database and populates it with csv cache
 #path to dbs will change depending on which folder you run the script in in vscode
 
-has_satellite = os.path.exists(f"{script_dir}/dbs/{norad_id}.db")
-if not has_satellite:
-    create_db = input("Do you want to create a new database? ")
-    if create_db.lower() == "y":
-        conn = sqlite3.connect(f"{script_dir}/dbs/{norad_id}.db")
-        c = conn.cursor()
-        c.execute("""CREATE TABLE IF NOT EXISTS data (
-            unix_time integer,
-            data blob
-        )""")
-    
-        print("clicking link\n")
-        webbot.clicker(norad_id)
-        print("fetching link\n")
-        link = mail.fetch(env_vars.mail_user, env_vars.mail_passwd)
-        print("downloading csv\n")
-        file = mail.download(link, norad_id)
 
-        #path to cache will change depending on which folder you run the script in in vscode
-        print("reading csv\n")
-
-        timestamps, frames = readCSV(norad_id)
-        print(timestamps)
-        print("done reading\n")
 
         
 
@@ -115,15 +92,49 @@ class sql:
         self.conn.commit()
 
     
+
+def DBCheck(norad_id:int):
+    has_satellite = os.path.exists(f"{script_dir}/dbs/{norad_id}.db")
+    if not has_satellite:
+        #change to recieve input from client
+        create_db = input("Do you want to create a new database? ")
+        if create_db.lower() == "y":
+            conn = sqlite3.connect(f"{script_dir}/dbs/{norad_id}.db")
+            c = conn.cursor()
+            c.execute("""CREATE TABLE IF NOT EXISTS data (
+                unix_time integer,
+                data blob
+            )""")
+    
+            print("clicking link\n")
+            webbot.clicker(norad_id)
+            print("fetching link\n")
+            link = mail.fetch(env_vars.mail_user, env_vars.mail_passwd)
+            print("downloading csv\n")
+            mail.download(link, norad_id)
+            print("reading csv\n")
+            timestamps, frames = readCSV(norad_id)
+            print(timestamps)
+            print("done reading\n")
+            print("appending to sql db\n")
+            console = sql(norad_id)
+            console.append(timestamps, frames)
+            print("finished")
+            worked = len(console.get(timestamps[0], timestamps[4]))
+            if worked == 0:
+                #change to send and recieve from the client
+                print("There was an error in building the database. Do you want to try again?")
+                
+
+
+
 #anything beyond this point is for testing
 
 #print(timestamps)
 #print(frames)
 #console = sql(norad_id)
 """
-print("appending to sql db\n")
-console.append(timestamps, frames)
-print("finished")
+
 """
 
 #console.get(1693464165, 1693541620)
