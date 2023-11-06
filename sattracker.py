@@ -43,7 +43,7 @@ update = env_vars.update
 #gonna be recieving NORAD ID from client
 #this is just a test
 #sat_id = os.environ.get("SATID")
-sat_id = 25544
+sat_id = 27844
 
 
 

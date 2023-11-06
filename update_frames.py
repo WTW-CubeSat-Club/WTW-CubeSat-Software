@@ -49,10 +49,9 @@ def genTimestamps(update_duration:int):
         if difference ==0:
             if calendar.isleap(int(current_datetime[:4])) and date_and_time[:2] == "03":
                 date_and_time = "02-29"
-                print(date_and_time)
             else:
                 date_and_time = f"{date_and_time[:2]}{days_per_month[date_and_time[:2]]}"
-                print(date_and_time)
+
         
             
 
@@ -130,9 +129,9 @@ def updateTelemetry(norad_id:int, start_time:str, end_time:str):
             while next_page_available:
                 #delay avoids throttling
                 if frame_count > 70:
-                    time.sleep(17)
                     print("delay")
-                response = response = requests.get(url=next_page_url, headers={'Authorization': 'Token ' + satnogs_api_token})
+                    time.sleep(17)
+                response = requests.get(url=next_page_url, headers={'Authorization': 'Token ' + satnogs_api_token})
                 next_page = response.json()
                 for i in range(len(next_page)-1):
                     frame_count+=1
@@ -163,8 +162,8 @@ def updateTelemetry(norad_id:int, start_time:str, end_time:str):
             #if no frames are available don't do anything
             if len(frames) == 0:
                 #create log file if it doesn't exist
-                if not os.path.exists(f"{script_dir}logs/update_frames.log"):
-                    with open(f"{script_dir}logs/update_frames.log", 'w') as logfile:
+                if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
+                    with open(f"{script_dir}/logs/update_frames.log", 'w') as logfile:
                         logfile.write(f"{datetime.date.today()}: No frames were retrieved. Here's the server response for more details: {response.json()}")
                 #logger
                 else:
@@ -182,12 +181,12 @@ def updateTelemetry(norad_id:int, start_time:str, end_time:str):
 
         except:
             #create log file if it doesn't exist
-            if not os.path.exists(f"{script_dir}logs/update_frames.log"):
+            if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
                 with open(f"{script_dir}logs/update_frames.log", 'w') as logfile:
                     logfile.write(f"{datetime.date.today()}: No frames were retrieved due to a network error. The system will try again.")
             #logger
             else:
-                with open(f"{script_dir}logs/update_frames.log", 'a') as logfile:
+                with open(f"{script_dir}/logs/update_frames.log", 'a') as logfile:
                     logfile.write(f"\n{datetime.date.today()}: No frames were retrieved due to a network error. The system will try again.")
         
 
@@ -198,7 +197,9 @@ if __name__ == "__main__":
     parser.add_argument('update_duration', type=int, help='The span of days the satellite will fetch frames from.')
     args = parser.parse_args()
     start_time, end_time = genTimestamps(args.update_duration)
+    print(start_time, end_time)
     timestamps, frames = updateTelemetry(str(args.norad_id), start_time, end_time)
-    console = sqlquery.sql(str(args.norad_id))
-    console.append(timestamps, frames)
+    print("\n\n\n"+timestamps+frames)
+    #console = sqlquery.sql(str(args.norad_id))
+    #console.append(timestamps, frames)
 

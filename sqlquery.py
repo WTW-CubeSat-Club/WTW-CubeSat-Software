@@ -18,7 +18,7 @@ def readCSV(norad_id:int):
     timestamps = []
     frames = []
     # opening the CSV file
-    with open(f"{script_dir}csv_cache/{norad_id}data.csv", mode ='r')as file:
+    with open(f"{script_dir}/csv_cache/{norad_id}data.csv", mode ='r')as file:
         # reading the CSV file
         csvFile = csv.reader(file)
 
@@ -39,24 +39,9 @@ def readCSV(norad_id:int):
     #reverse lists to it can go from end time to start time
     timestamps.reverse()
     frames.reverse()
-    os.remove(f"{script_dir}csv_cache/{norad_id}data.csv")
+    os.remove(f"{script_dir}/csv_cache/{norad_id}data.csv")
         
     return timestamps, frames
-
-
-
-
-
-#this is a text function that imitates requests from server.py
-#checks if database exists, if not creates database and populates it with csv cache
-#path to dbs will change depending on which folder you run the script in in vscode
-
-
-
-        
-
-
-
 
 
 
@@ -120,19 +105,21 @@ def DBCheck(norad_id:int):
             console = sql(norad_id)
             console.append(timestamps, frames)
             print("finished")
-            worked = len(console.get(timestamps[0], timestamps[4]))
+            worked = len(console.get(int(timestamps[0]), int(timestamps[4])))
             if worked == 0:
                 #change to send and recieve from the client
                 print("There was an error in building the database. Do you want to try again?")
-                
 
+
+
+DBCheck(27844)
 
 
 #anything beyond this point is for testing
 
 #print(timestamps)
 #print(frames)
-#console = sql(norad_id)
+console = sql(27844)
 """
 
 """

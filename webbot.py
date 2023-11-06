@@ -9,7 +9,7 @@ script_dir = env_vars.script_dir
 web = webdriver.Chrome()
 
     
-def load_cookies():
+def loadCookies():
 
      with open(f"{script_dir}/satnogs_cookies", 'rb') as cookiesfile:
          cookies = pickle.load(cookiesfile)
@@ -18,7 +18,7 @@ def load_cookies():
             print("adding cookie")
             web.add_cookie(cookie)
 
-def save_cookies():
+def saveCookies():
     #it only works if you get cookies with firefox
     firefox = webdriver.Firefox()
     #get website and wait for you to enter username and password
@@ -37,7 +37,7 @@ def clicker(norad_id:int):
     norad_id = str(norad_id)
     web.get('https://db.satnogs.org/')
     time.sleep(1)
-    load_cookies()
+    loadCookies()
     web.get('https://db.satnogs.org/')
     time.sleep(1)
     search_box = web.find_element(By.ID, "search")
