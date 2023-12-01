@@ -47,3 +47,4 @@ def clicker(norad_id:int):
     time.sleep(1)
     web.find_element(By.LINK_TEXT, "Everything").click()
     time.sleep(1)
+
