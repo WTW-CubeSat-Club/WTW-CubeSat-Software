@@ -20,11 +20,11 @@ class sql:
             """
             DROP TABLE IF EXISTS frames;
 
-            CREATE TABLE IF NOT EXISTS frames (
+            CREATE TABLE IF NOT EXISTS telemetry (
                 satellite integer,
                 timestamp integer,
-                data blob,
-                station_id string
+                frame blob,
+                station string
                 );
 
             DROP TABLE IF EXISTS satellites;
@@ -53,7 +53,8 @@ class sql:
 
 if __name__ == "__main__":
     if input("Are you sure you want to delete the database and recreate it? (y/n) ").strip() == "y":
-        sql.migrate()
+        cursor = sql()
+        cursor.migrate()
 
 # Checklist
 

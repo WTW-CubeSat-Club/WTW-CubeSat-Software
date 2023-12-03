@@ -311,9 +311,9 @@ if __name__ == "__main__":
     parser.add_argument("offset", type=int, help="The date offset used to calculate timestamps. Going over a week or two is not recommended.")
     args = parser.parse_args()
     print("Generating timestamps")
-    start_time, end_time = genTimestamps(args.update_duration, args.offset)
+    start_time, end_time = genTimestamps(update_duration=args.update_duration, offset=args.offset)
     print(f"Fetching frames from {start_time} to {end_time}")
-    norad_ids, timestamps, frames, stations = updateTelemetry(args.norad_id, start_time, end_time)
+    norad_ids, timestamps, frames, stations = updateTelemetry(norad_id=args.norad_id, start_time=start_time, end_time=end_time)
     if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
         with open(f"{script_dir}logs/update_frames.log", "w") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Generating SQL cursor.")
@@ -321,7 +321,7 @@ if __name__ == "__main__":
     else:
         with open(f"{script_dir}/logs/update_frames.log", "a") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Generating SQL cursor.")
-    cursor = sqlquery.sql(args.norad_id)
+    cursor = sqlquery.sql()
     if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
         with open(f"{script_dir}logs/update_frames.log", "w") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Appending frames to DB.")
@@ -330,7 +330,7 @@ if __name__ == "__main__":
         with open(f"{script_dir}/logs/update_frames.log", "a") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Appending frames DB.")
     print("Appending frames to DB")
-    cursor.append(norad_ids, timestamps, frames, stations)
+    cursor.appendTelemetry(norad_ids=norad_ids, timestamps=timestamps, frames=frames, stations=stations)
     if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
         with open(f"{script_dir}logs/update_frames.log", "w") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Succesfully retrieved and appended frames in the span of {start_time} to end {end_time}.")
