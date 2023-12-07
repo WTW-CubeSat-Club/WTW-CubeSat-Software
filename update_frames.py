@@ -122,6 +122,13 @@ def genTimestamps(update_duration: int, offset: int):
 
 def updateTelemetry(norad_id: int, start_time: str, end_time: str):
     try_again = True
+    sat_url = f"https://db-dev.satnogs.org/api/satellites/?norad_cat_id={norad_id}"
+    response = requests.get(url=sat_url, headers={"Authorization": "Token" + satnogs_api_token})
+
+    if response.json()[0]["status"] != "alive":
+        sqlquery.sql().notInOrbit(norad_id)
+        quit
+
     while try_again:
         try:
             url = f"https://db.satnogs.org/api/telemetry/?satellite={norad_id}&start={start_time}&end={end_time}"
@@ -321,7 +328,6 @@ if __name__ == "__main__":
     else:
         with open(f"{script_dir}/logs/update_frames.log", "a") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Generating SQL cursor.")
-    cursor = sqlquery.sql()
     if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
         with open(f"{script_dir}logs/update_frames.log", "w") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Appending frames to DB.")
@@ -330,7 +336,7 @@ if __name__ == "__main__":
         with open(f"{script_dir}/logs/update_frames.log", "a") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Appending frames DB.")
     print("Appending frames to DB")
-    cursor.appendTelemetry(norad_ids=norad_ids, timestamps=timestamps, frames=frames, stations=stations)
+    sqlquery.sql().appendTelemetry(norad_ids=norad_ids, timestamps=timestamps, frames=frames, stations=stations)
     if not os.path.exists(f"{script_dir}/logs/update_frames.log"):
         with open(f"{script_dir}logs/update_frames.log", "w") as logfile:
             logfile.write(f"\n{datetime.datetime.now()}: Succesfully retrieved and appended frames in the span of {start_time} to end {end_time}.")
