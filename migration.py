@@ -37,7 +37,8 @@ class sql:
                 deployment_date string,
                 deframer string,
                 decoder string,
-                countries string
+                countries string,
+                in_orbit int
                 )
         """
         )
@@ -53,8 +54,7 @@ class sql:
 
 if __name__ == "__main__":
     if input("Are you sure you want to delete the database and recreate it? (y/n) ").strip() == "y":
-        cursor = sql()
-        cursor.migrate()
+        sql().migrate()
 
 # Checklist
 
