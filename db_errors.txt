@@ -1,1 +1,3 @@
 this is a list of binary db errors and what they mean
+1: invalid db request
+2: wrong password for encrypted user info db
