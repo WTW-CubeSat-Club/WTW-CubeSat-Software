@@ -1,5 +1,8 @@
 import sqlite3
 import env_vars
+from pysqlcipher3 import dbapi2 as securesql
+import getpass
+import os
 
 script_dir = env_vars.script_dir
 
@@ -7,15 +10,42 @@ script_dir = env_vars.script_dir
 class sql:
     db_folder = "data"
     db_name = "data"
+    secure_db_name = "private"
     db_path = f"{script_dir}/{db_folder}/{db_name}.db"
-
-    def __init__(self):
-        self.conn = sqlite3.connect(sql.db_path)
-        self.cursor = self.conn.cursor()
+    secure_db_path = f"{script_dir}/{db_folder}/{secure_db_name}.db"
+    print(secure_db_path)
 
     table = ""
 
+    def createSecureDB(self):
+        if os.path.exists(sql.secure_db_path):
+            os.remove(sql.secure_db_path)
+        self.securedb = securesql.connect(sql.secure_db_path)
+        self.secure_cursor = self.securedb.cursor()
+        key = getpass.getpass("Enter the key that will be used to encrypt the user database: ")
+        self.secure_cursor.executescript(
+            f"""
+            PRAGMA key = '{key}';
+
+            PRAGMA cipher_compatibility = 3;
+
+            create table if not exists info (
+                username str,
+                password str,
+                lat real,
+                lng real,
+                email str,
+                email_passwd str,
+                satnogs_key str,
+                ny2o_key str,
+                is_admin int
+            )
+            """
+        )
+
     def createDB(self):
+        self.conn = sqlite3.connect(sql.db_path)
+        self.cursor = self.conn.cursor()
         self.cursor.executescript(
             """
             DROP TABLE IF EXISTS frames;
@@ -46,10 +76,12 @@ class sql:
         self.conn.commit()
 
     def migrate(self):
-        self.createDB()
+        self.createSecureDB()
+        # self.createDB()
 
     def __del__(self):
         self.conn.close()
+        self.securedb.close()
 
 
 if __name__ == "__main__":
@@ -60,3 +92,4 @@ if __name__ == "__main__":
 
 # fix SQL get and append
 # change DBCheck and update_frames to work with new DB system
+# HI POOKIE DOOKIE BOOKIE BEAR

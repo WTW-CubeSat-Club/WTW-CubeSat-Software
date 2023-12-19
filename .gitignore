@@ -6,3 +6,4 @@ geckodriver.log
 test.py
 satnogs_cookies
 *.pem
+data

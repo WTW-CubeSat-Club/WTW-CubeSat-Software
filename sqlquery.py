@@ -5,11 +5,13 @@ import csv
 import calendar
 import requests
 import mail
-import webbot
+
+# import webbot
 import env_vars
 import os
 import datetime
 import operator
+from pysqlcipher3 import dbapi2 as securesql
 
 script_dir = env_vars.script_dir
 
@@ -45,14 +47,22 @@ def readCSV(norad_id: int):
     return timestamps, frames
 
 
+class secureSQL:
+    pass
+
+
 class sql:
     db_folder = "data"
     db_name = "data"
+    securedb_name = "private"
     db_path = f"{script_dir}/{db_folder}/{db_name}.db"
+    securedb_path = f"{script_dir}/{db_folder}/{securedb_name}.db"
 
     def __init__(self):
         self.conn = sqlite3.connect(sql.db_path)
         self.cursor = self.conn.cursor()
+        self.securedb = securesql.connect(sql.securedb_path)
+        self.secure_cursor = self.securedb.cursor()
 
     table = ""
 
@@ -255,18 +265,18 @@ class sql:
                             if int(data[i][1]) >= start_time:
                                 telemetry.append([data[i][1], data[i][2]])
         except:
-            telemetry = [[1]]  # this will change when I assign actual db error numbers
-
-        if return_metadata:
-            sorted(telemetry, key=operator.itemgetter(1))
-        else:
-            sorted(telemetry, key=operator.itemgetter(0))
-
-        for i in range(len(telemetry)):
+            telemetry = 1  # this will change when I assign actual db error numbers
+        if telemetry != 1:
             if return_metadata:
-                telemetry[i][1] = datetime.datetime.utcfromtimestamp(telemetry[i][1]).strftime("%Y-%m-%d %H:%M:%S")
+                sorted(telemetry, key=operator.itemgetter(1))
             else:
-                telemetry[i][0] = datetime.datetime.utcfromtimestamp(telemetry[i][0]).strftime("%Y-%m-%d %H:%M:%S")
+                sorted(telemetry, key=operator.itemgetter(0))
+
+            for i in range(len(telemetry)):
+                if return_metadata:
+                    telemetry[i][1] = datetime.datetime.utcfromtimestamp(telemetry[i][1]).strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    telemetry[i][0] = datetime.datetime.utcfromtimestamp(telemetry[i][0]).strftime("%Y-%m-%d %H:%M:%S")
 
         print(telemetry)
         return telemetry
@@ -336,7 +346,7 @@ class sql:
                 print(info)
 
         except ModuleNotFoundError:
-            info = [[1]]
+            info = 1
 
     def appendTelemetry(self, norad_id: int, timestamps: list, frames: list, stations: list = [None]):
         if stations[0] == None:
@@ -431,38 +441,49 @@ class sql:
             norad_id=norad_id, description=description, launch_date=launch_date, deployment_date=deployment_date, deframer=deframer, decoder=decoder, countries=data["countries"], name=data["name"]
         )
 
-    def createDB(self):
-        self.cursor.executescript(
-            """
-            DROP TABLE IF EXISTS frames;
+    def getUserInfo(self, key, username, password, all_data: bool = False, email_login: bool = False, tracker_info: bool = False, satnogs_key: bool = False, is_admin: bool = False):
+        if key == None:
+            print("Database encryption key was not passed.")
+            quit
+        try:
+            self.secure_cursor.executescript(
+                f"""PRAGMA key='{key}';
+                    PRAGMA cipher_compatibility = 3"""
+            )
+        except:
+            print("Database key is incorrect.")
+            quit
+        if username == None or password == None:
+            print("Either the username or password was not passed.")
+            quit
 
-            CREATE TABLE IF NOT EXISTS telemetry (
-                satellite integer,
-                timestamp integer,
-                data str,
-                station string
-                );
+        if all_data and not email_login and not tracker_info and not is_admin and not satnogs_key:
+            self.secure_cursor.execute(f"""select lat, lng, email, email_passwd, satnogs_key, ny2o_key, admin from info where username={username} and password={password}""")
+            data = self.secure_cursor.fetchall()
+            info = [data[0][0], data[0][1], data[0][2], data[0][3], data[0][4], data[0][5], data[0][6]]
+        if not all_data and email_login and not tracker_info and not is_admin and not satnogs_key:
+            self.secure_cursor.execute(f"""select email, email_passwd from info where username={username} and password={password}""")
+            data = self.secure_cursor.fetchall()
+            info = [data[0][0], data[0][1]]
+        if not all_data and not email_login and tracker_info and not is_admin and not satnogs_key:
+            self.secure_cursor.execute(f"""select lat, lng, ny2o_key from info where username='{username}' and password='{password}'""")
+            data = self.secure_cursor.fetchall()
+            info = [data[0][0], data[0][1], data[0][2]]
+        if not all_data and not email_login and not tracker_info and not is_admin and satnogs_key:
+            self.secure_cursor.execute(f"""select lat, lng, ny2o_key from info where username='{username}' and password='{password}'""")
+            data = self.secure_cursor.fetchall()
+            info = [data[0][0]]
+        if all_data and not email_login and not tracker_info and is_admin and not satnogs_key:
+            self.secure_cursor.execute(f"""select admin from info where username={username} and password={password}""")
+            if self.secure_cursor.fetchall()[0][0] == 1:
+                info = True
+            else:
+                info = False
 
-            DROP TABLE IF EXISTS satellites;
-            
-            CREATE TABLE IF NOT EXISTS satellites (
-                norad_id integer,
-                name string,
-                description string,
-                launch_date string,
-                deployment_date string,
-                deframer string,
-                decoder string,
-                countries string,
-                in_orbit int
-                )
-        """
-        )
+        return info
 
-        self.conn.commit()
-
-    def migrate(self):
-        self.createDB()
+    def buildUserInfo(self):
+        pass
 
     def __del__(self):
         self.conn.close()
@@ -500,7 +521,6 @@ sql().appendSatellite(
 )
 """
 
-sql().buildSatInfo(32785)
 
 """
 # cursor.get(1693464165, 1693541620)
