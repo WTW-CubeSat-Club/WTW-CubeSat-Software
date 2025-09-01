@@ -92,4 +92,3 @@ if __name__ == "__main__":
 
 # fix SQL get and append
 # change DBCheck and update_frames to work with new DB system
-# HI POOKIE DOOKIE BOOKIE BEAR
